@@ -23,12 +23,12 @@ namespace NEA
                 throw new ArgumentException("Matrices must be the same dimensions to be added.");
             }
 
-            double[,] result = new double[left.rows,left.cols];
+            double[,] result = new double[left.rows, left.cols];
             for (int row = 0; row < left.rows; row++)
             {
                 for (int col = 0; col < left.cols; col++)
                 {
-                    result[row,col] = left.values[row,col] + right.values[row,col];
+                    result[row, col] = left.values[row, col] + right.values[row, col];
                 }
             }
 
@@ -52,6 +52,19 @@ namespace NEA
 
             return new Matrix(result);
         }
+        public static Matrix operator -(Matrix matrix)
+        {
+            double[,] result = new double[matrix.rows, matrix.cols];
+            for (int row = 0; row < matrix.rows; row++)
+            {
+                for (int col = 0; col < matrix.cols; col++)
+                {
+                    result[row, col] = -matrix.values[row, col];
+                }
+            }
+
+            return new Matrix(result);
+        }
         public static Matrix operator *(Matrix left, Matrix right)
         {
             if (left.cols != right.rows)
@@ -59,7 +72,7 @@ namespace NEA
                 throw new ArgumentException("Invalid sizes for matrix multiplication");
             }
 
-            double[,] result = new double[left.rows,right.cols];
+            double[,] result = new double[left.rows, right.cols];
 
             for (int row = 0; row < left.rows; row++)
             {
@@ -76,7 +89,7 @@ namespace NEA
 
             return new Matrix(result);
         }
-        public static Matrix operator *(int scalar, Matrix matrix)
+        public static Matrix operator *(double scalar, Matrix matrix)
         {
             double[,] result = new double[matrix.rows, matrix.cols];
             for (int row = 0; row < matrix.rows; row++)
@@ -88,11 +101,17 @@ namespace NEA
             }
 
             return new Matrix(result);
-        }//scalar multiplication 
-        public static Matrix operator ^(Matrix matrix, uint power)
+        }
+        public static Matrix operator *(Matrix matrix, double scalar) => scalar * matrix;
+        public static Matrix operator ^(Matrix matrix, double setPower)
         {
             if (matrix.rows != matrix.cols) throw new ArgumentException("You can only raise a square matrix to a power");
-            if (power == 0) return matrix.Identity(matrix.rows);
+            if (setPower == 0) return matrix.Identity(matrix.rows);
+
+            int power;
+
+            if (setPower % 1 != 0) throw new ArgumentException("Power must be a whole number");
+            else power = (int)setPower;
 
             Matrix result = matrix;
 
@@ -123,16 +142,18 @@ namespace NEA
 
             for (int row = 0; row < rows; row++)
             {
-                Console.Write("|");
+                matrixString.Append("|");
                 for (int col = 0; col < cols; col++)
                 {
-                    matrixString.Append($"{values[row, col]} ");
+                    matrixString.Append($"{values[row, col]}");
+
+                    if (col != cols - 1) matrixString.Append(" ");
                 }
                 matrixString.Append("| \n");
             }
 
             return matrixString.ToString();
-        } 
+        }
         public Matrix Identity(int size)
         {
             double[,] result = new double[size, size];

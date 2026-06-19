@@ -11,21 +11,14 @@ namespace NEA
         static void Main(string[] args)
         {
             Console.OutputEncoding = Encoding.Unicode;
+            MatrixCalculator matrixCalculator = new MatrixCalculator();
 
-            Matrix matrix1 = new Matrix(new double[2, 2] { 
-                { 1, 2 },
-                { 3, 4 } });
-            Matrix matrix2 = new Matrix(new double[2, 1] { 
-                { 4 }, 
-                { 1 } });
-
-            Matrix matrix3 = matrix2.Transpose();
-
-            string equation = "6 + (2 - 1 + - 1 * (2 + (2 - 1) ) )";
-            MatrixCalculator matrixCalculator = new MatrixCalculator(equation);
-
-
-            //⎡⎢⎣⎤⎥⎦[
+            while (true)
+            {
+                string equation = Console.ReadLine();
+                matrixCalculator.Evaluate(equation);
+                matrixCalculator.Print();
+            }
         }
     }
 }
