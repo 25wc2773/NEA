@@ -10,14 +10,15 @@ namespace NEA
     {
         Operator,
         Matrix,
-        Scalar
+        Scalar,
+        Error
     }
     internal class Token
     {
         private TokenType type;
         private Matrix matrixValue;
         private double scalarValue;
-        private string operatorValue;
+        private string operatorValue, errorMessage;
 
         public Token(string data)
         {
@@ -34,6 +35,11 @@ namespace NEA
             type = TokenType.Scalar;
             scalarValue = data;
         }
+        public Token(string error, TokenType tokenType) //second parameter prevents confusion with operator construct
+        {
+            type = TokenType.Error;
+            errorMessage = error;
+        }
         public TokenType GetTokenType()
         {
             return type;
@@ -41,5 +47,6 @@ namespace NEA
         public Matrix GetMatrixValue() => matrixValue;
         public double GetScalarValue() => scalarValue;
         public string GetOperatorValue() => operatorValue;
+        public string GetErrorMessage() => errorMessage;
     }
 }

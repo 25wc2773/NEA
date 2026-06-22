@@ -16,19 +16,26 @@ namespace NEA
 
         public void Evaluate(string input)
         {
-            input = input.Replace(" ", "");
+            try
+            {
+                input = input.Replace(" ", "");
 
-            if (IsUserVariableAssignment(input))
-            {
-                string definition = input.Substring(2);
-                userVariables[input[0]] = InternalEvaluate(definition);
-                solution = userVariables[input[0]];
+                if (IsUserVariableAssignment(input))
+                {
+                    string definition = input.Substring(2);
+                    userVariables[input[0]] = InternalEvaluate(definition);
+                    solution = userVariables[input[0]];
+                }
+                else
+                {
+                    List<Token> tokenList = Tokenize(input);
+                    Token[] rpnExpression = ConvertToRPN(tokenList);
+                    solution = EvaluateRPN(rpnExpression);
+                }
             }
-            else
+            catch (Exception exception)
             {
-                List<Token> tokenList = Tokenize(input);
-                Token[] rpnExpression = ConvertToRPN(tokenList);
-                solution = EvaluateRPN(rpnExpression);
+                solution = new Token($"Error: {exception.Message}", TokenType.Error);
             }
         }
         private Token InternalEvaluate(string input)
@@ -85,7 +92,10 @@ namespace NEA
 
                 else if (i < input.Length - 2 && input.Substring(i, 3).ToUpper() == "ANS") //check if the input was 'Ans'
                 {
-                    if (solution == null) throw new ArgumentException("Ans does not yet have a value");
+                    if (solution == null || solution.GetTokenType() == TokenType.Error)
+                    {
+                        throw new ArgumentException("'Ans' does not currently have a value");
+                    }
 
                     tokens.Add(solution);
                     i += 2;
@@ -94,7 +104,7 @@ namespace NEA
                 else if (IsUserVariable(currentChar))
                 {
                     Token value = userVariables[currentChar];
-                    if (value == null) throw new ArgumentException($"Variable {currentChar} has not been defined");
+                    if (value == null) throw new ArgumentException($"Variable '{currentChar}' does not currently have a value");
 
                     tokens.Add(value);
                 }
@@ -356,9 +366,21 @@ namespace NEA
         public void Print()
         {
             TokenType type = solution.GetTokenType();
-            if (type == TokenType.Matrix) Console.WriteLine(solution.GetMatrixValue().ToString());
-            else if (type == TokenType.Scalar) Console.WriteLine(solution.GetScalarValue());
-            else if (type == TokenType.Operator) Console.WriteLine(solution.GetOperatorValue());
+
+            string solutionToString = null;
+
+            if (type == TokenType.Matrix) solutionToString = solution.GetMatrixValue().ToString();
+            else if (type == TokenType.Scalar) solutionToString = solution.GetScalarValue().ToString();
+            else if (type == TokenType.Operator) solutionToString = solution.GetOperatorValue();
+            else if (type == TokenType.Error) solutionToString = solution.GetErrorMessage();
+
+            string[] lines = solutionToString.Split('\n');
+
+            Console.WriteLine($"= {lines[0]}".PadLeft(Console.WindowWidth));
+            for (int i = 1; i < lines.Length; i++)
+            {
+                Console.WriteLine(lines[i].PadLeft(Console.WindowWidth));
+            }
         }
 
         private bool IsDoubleComponent(char c) => (char.IsDigit(c) || c == '.');

@@ -18,7 +18,7 @@ namespace NEA
         }
         public static Matrix operator +(Matrix left, Matrix right)
         {
-            if (left.rows != right.rows && left.cols != right.cols)
+            if (left.rows != right.rows || left.cols != right.cols)
             {
                 throw new ArgumentException("Matrices must be the same dimensions to be added.");
             }
@@ -36,7 +36,7 @@ namespace NEA
         }
         public static Matrix operator -(Matrix left, Matrix right)
         {
-            if (left.rows != right.rows && left.cols != right.cols)
+            if (left.rows != right.rows || left.cols != right.cols)
             {
                 throw new ArgumentException("Matrices must be the same dimensions to be added.");
             }
@@ -138,21 +138,38 @@ namespace NEA
         }
         public override string ToString()
         {
-            StringBuilder matrixString = new StringBuilder();
+            StringBuilder result = new StringBuilder();
+            string[,] matrixToString = new string[rows, cols];
+            string currentValueToString;
+            int[] colMaxLengths = new int[cols];
+            int currentValueLength;
+
+            for (int col = 0; col < cols; col++)
+            {
+                colMaxLengths[col] = 0;
+                for (int row = 0; row < rows; row++)
+                {
+                    currentValueToString = values[row, col].ToString();
+                    currentValueLength = currentValueToString.Length;
+
+                    if (currentValueLength > colMaxLengths[col]) colMaxLengths[col] = currentValueLength;
+                    matrixToString[row, col] = currentValueToString;
+                }
+            }
 
             for (int row = 0; row < rows; row++)
             {
-                matrixString.Append("|");
+                result.Append("|");
                 for (int col = 0; col < cols; col++)
                 {
-                    matrixString.Append($"{values[row, col]}");
-
-                    if (col != cols - 1) matrixString.Append(" ");
+                    result.Append(matrixToString[row, col].PadRight(colMaxLengths[col]));
+                    if (col != cols - 1) result.Append(" ");
                 }
-                matrixString.Append("| \n");
+                result.Append("|");
+                if (row != rows - 1) result.Append("\n");
             }
 
-            return matrixString.ToString();
+            return result.ToString();
         }
         public Matrix Identity(int size)
         {

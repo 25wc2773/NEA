@@ -18,6 +18,7 @@ namespace NEA
                 string equation = Console.ReadLine();
                 matrixCalculator.Evaluate(equation);
                 matrixCalculator.Print();
+                Console.WriteLine(new string('-', Console.WindowWidth));
             }
         }
     }
