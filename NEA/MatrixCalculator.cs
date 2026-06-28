@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
+using System.Linq.Expressions;
 
 namespace NEA
 {
@@ -25,17 +24,36 @@ namespace NEA
                     string definition = input.Substring(2);
                     userVariables[input[0]] = InternalEvaluate(definition);
                     solution = userVariables[input[0]];
+                    Print();
+                }
+                else if (input.Length == 4 && input.ToLower() == "help")
+                {
+                    Help();
+                }
+                else if (input.Length == 5 && input.ToLower() == "clear")
+                {
+                    Clear();
+                }
+                else if (input.Length == 5 && input.ToLower() == "reset")
+                {
+                    Reset();
+                }
+                else if (input.Length == 7 && input.ToLower() == "restart")
+                {
+                    Restart();
                 }
                 else
                 {
                     List<Token> tokenList = Tokenize(input);
                     Token[] rpnExpression = ConvertToRPN(tokenList);
                     solution = EvaluateRPN(rpnExpression);
+                    Print();
                 }
             }
             catch (Exception exception)
             {
                 solution = new Token($"Error: {exception.Message}", TokenType.Error);
+                Print();
             }
         }
         private Token InternalEvaluate(string input)
@@ -216,8 +234,16 @@ namespace NEA
 
                     else if (arity == 2)
                     {
-                        right = evaluateStack.Pop();
-                        left = evaluateStack.Pop();
+                        try
+                        {
+                            right = evaluateStack.Pop();
+                            left = evaluateStack.Pop();
+                        }
+                        catch
+                        {
+                            throw new ArgumentException("Syntax Error");
+                        }
+                        
                         rightType = right.GetTokenType();
                         leftType = left.GetTokenType();
 
@@ -246,7 +272,8 @@ namespace NEA
                                     evaluateStack.Push(new Token(matrix ^ scalar));
                                     break;
                                 default:
-                                    throw new NotImplementedException();
+                                    throw new ArgumentException($"Cannot apply '{op}' to a " +
+                                        $"{left.GetTokenType()} and {right.GetTokenType()}");
                             }
                         }
                         else if (rightType == TokenType.Scalar) //both tokens are scalars
@@ -343,26 +370,6 @@ namespace NEA
             return new Token(matrix);
         }
 
-        private void Print(List<Token> tokens)
-        {
-            foreach (Token token in tokens)
-            {
-                TokenType type = token.GetTokenType();
-                if (type == TokenType.Matrix) Console.Write(token.GetMatrixValue().ToString());
-                else if (type == TokenType.Scalar) Console.Write(token.GetScalarValue());
-                else if (type == TokenType.Operator) Console.Write(token.GetOperatorValue());
-
-                Console.Write(" ");
-            }
-            Console.WriteLine();
-        }
-        private void Print(Token token)
-        {
-            TokenType type = token.GetTokenType();
-            if (type == TokenType.Matrix) Console.WriteLine(token.GetMatrixValue().ToString());
-            else if (type == TokenType.Scalar) Console.WriteLine(token.GetScalarValue());
-            else if (type == TokenType.Operator) Console.WriteLine(token.GetOperatorValue());
-        }
         public void Print()
         {
             TokenType type = solution.GetTokenType();
@@ -376,11 +383,13 @@ namespace NEA
 
             string[] lines = solutionToString.Split('\n');
 
-            Console.WriteLine($"= {lines[0]}".PadLeft(Console.WindowWidth));
+            Console.WriteLine($"= {lines[0]} ".PadLeft(Console.WindowWidth));
             for (int i = 1; i < lines.Length; i++)
             {
-                Console.WriteLine(lines[i].PadLeft(Console.WindowWidth));
+                Console.WriteLine(lines[i] + " ".PadLeft(Console.WindowWidth));
             }
+
+            Console.WriteLine(new string('-', Console.WindowWidth));
         }
 
         private bool IsDoubleComponent(char c) => (char.IsDigit(c) || c == '.');
@@ -474,6 +483,44 @@ namespace NEA
                 return false;
             }
         }
+
+        public void Help()
+        {
+            Console.WriteLine(new string('-', Console.WindowWidth));
+            Console.Write("To enter a matrix, use square brackets, with a comma " +
+                "separating each value, or a semi colon if that value is at the end " +
+                "of a row.\nE.g [1,2;3,4] represents:\n|1 2|\n|3 4|\n\nThe calculator " +
+                "supports the operations +,-,* and /. It will evaluate any expressions " +
+                "that you put inside of a matrix cell.\n\nYou can store variables " +
+                "for letters A,B,C,D,E,F,x and y (case sensitive). To do this put the " +
+                "name of the variable, then an equals sign, and then whatever value you " +
+                "want to store. If you put an expression after the equals, it will be " +
+                "evaluated and stored as the answer. It can then be called by just " +
+                "typing the letter.\n\nTo clear the screen, type ‘clear’.\nTo " +
+                "reset the values of variables, type ‘reset’.\nTo clear the screen " +
+                "and reset the values of variables, type ‘restart’.\n");
+            Console.WriteLine(new string('-', Console.WindowWidth));
+        }
+        public void Clear()
+        {
+            Console.Clear();
+            Console.WriteLine("If you need help, type 'help' for instructions.");
+            Console.WriteLine(new string('-', Console.WindowWidth));
+        }
+        public void Reset()
+        {
+            userVariables = new Dictionary<char, Token> {{'A', null}, {'B', null}, 
+                {'C', null}, {'D', null}, {'E', null}, {'F', null}, {'x', null}, {'y', null},};
+            Console.WriteLine(new string('-', Console.WindowWidth));
+            Console.WriteLine("Your variables have been successfully reset");
+            Console.WriteLine(new string('-', Console.WindowWidth));
+        }
+        public void Restart()
+        {
+            Reset();
+            Clear();
+        }
+
         public Token GetSolution() => solution;
     }
 }

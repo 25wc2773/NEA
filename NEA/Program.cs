@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NEA
 {
@@ -11,14 +8,14 @@ namespace NEA
         static void Main(string[] args)
         {
             Console.OutputEncoding = Encoding.Unicode;
+            Console.BufferWidth = Console.WindowWidth;
             MatrixCalculator matrixCalculator = new MatrixCalculator();
+            matrixCalculator.Clear();
 
             while (true)
             {
                 string equation = Console.ReadLine();
                 matrixCalculator.Evaluate(equation);
-                matrixCalculator.Print();
-                Console.WriteLine(new string('-', Console.WindowWidth));
             }
         }
     }
