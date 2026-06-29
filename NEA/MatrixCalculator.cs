@@ -386,7 +386,7 @@ namespace NEA
             Console.WriteLine($"= {lines[0]} ".PadLeft(Console.WindowWidth));
             for (int i = 1; i < lines.Length; i++)
             {
-                Console.WriteLine(lines[i] + " ".PadLeft(Console.WindowWidth));
+                Console.WriteLine($"{lines[i]} ".PadLeft(Console.WindowWidth));
             }
 
             Console.WriteLine(new string('-', Console.WindowWidth));
